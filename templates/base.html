@@ -44,12 +44,12 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="btn btn-outline-danger btn-sm" aria-current="page" href="">
-                <i class="fas fa-sign-in-alt"></i>&nbsp;Login</a>
+              <a class="btn btn-outline-danger btn-sm" aria-current="page" href="{% url 'logout' %}">
+                <i class="fas fa-sign-out-alt"></i>&nbsp;Logout</a>
             </li>
             {% else %}
             <li class="nav-item">
-              <a class="btn btn-outline-light" aria-current="page" href="">
+              <a class="btn btn-outline-light" aria-current="page" href="{% url 'login' %}">
                 <i class="fas fa-sign-in-alt"></i>&nbsp;Login</a>
             </li>
             <li class="nav-item">
