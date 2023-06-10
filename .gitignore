@@ -1,0 +1,31 @@
+# Byte-compiled / optimized Python files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+*.env
+
+# IDEs and editors
+.idea/
+.vscode/
+
+# Dependency directories
+lib/
+libs/
+library/
+
+# Compiled Python files
+*.pyc
+
+# Miscellaneous
+.DS_Store
