@@ -1,9 +1,18 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %} Home | Free 2 Connect {% endblock %}
-{% block content %} 
+{% block content %}
 
 <div class="container my-5">
     <h1 class="text-black text-center">Feel Free to Connect 👋🏼</h1>
+
+
+    <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
+    <a class="btn btn-outline-dark mx-2">
+        <i class="fas fa-plus"></i> &nbsp;Connect</a>
 </div>
 
+{% endblock %}
+{% block jsscript %}
+<script src="{% static 'js/index.js' %}"></script>
 {% endblock %}

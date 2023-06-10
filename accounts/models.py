@@ -24,6 +24,7 @@ class CustomUser(AbstractUser):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     country = models.CharField(max_length=255)
     interests = models.ManyToManyField(Interest)
+    is_online = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.username} | {self.full_name} | {self.email}"

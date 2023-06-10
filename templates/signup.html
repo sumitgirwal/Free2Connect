@@ -12,7 +12,7 @@
                 {% csrf_token %}
                 {% bootstrap_form form %}
                 <button type="submit" class="btn btn-primary">Signup</button>
-                    <a href="" class="btn btn-sm btn-light">Cancel</a>
+                    <a href="{% url 'index'%}" class="btn btn-sm btn-light">Cancel</a>
             </form>
             <p class="text-black-50 mt-2">Already have Account?
                 <a class="link-primary" href=""> Login </a></p>
