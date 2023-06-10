@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %} Signup | Free 2 Connect {% endblock %}
+
+{% load static %}
+{% load bootstrap5 %}
+{% block content %} 
+<div class="container">
+    <div class="row d-flex justify-content-center align-items-center h-100 my-5">
+        <div class="card rounded border mx-3 my-2 px-5 py-2 w-75">
+            <h1 class="mt-4 text-center">Signup</h1>
+            <form action="" method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button type="submit" class="btn btn-primary">Signup</button>
+                    <a href="" class="btn btn-sm btn-light">Cancel</a>
+                <p class="text-black-50 mt-2">Already have Account?
+                    <a class="link-primary" href=""> Login </a></p>
+            </form>
+        </div>
+    </div>
+
+     
+</div>
+
+{% endblock %}
