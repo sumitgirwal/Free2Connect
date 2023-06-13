@@ -2,19 +2,22 @@
 {% load static %}
 {% block title %} Home | Free 2 Connect {% endblock %}
 {% block content %}
-
+ 
 <div class="container my-5">
     <h3 class="text-black text-center m-5">Feel Free to Connect 👋🏼</h3>
     <div class="row mt-3">
         <div class="col-4">
+            
+            
             <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
-            <a class="btn btn-outline-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
+
+            <a class="btn btn-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
             <div class="mt-5">
                 {% if interests %}
                 <h5 class="text-black-100">Selected Interest's: ✨</h5>
                 {% for interest in interests %}
                 <button class="btn btn-sm btn-warning m-2"><i class="fas fa-check"></i>
-                    {{interest.name|title}}</a></button>
+                    {{interest.name|title}}</button>
                 {% endfor %}
 
                 {% else %}
@@ -55,6 +58,7 @@
     // WebSocket connection closed
     socket.onclose = function(event) {
         console.log('Connection closed');
+        document.getElementById('connectBtn').innerHTML = '🚀 Connect'
     };
         
     $('#online-toggle').click(function() {
@@ -71,6 +75,7 @@
             $(this).attr('data-state', 'offline');
             $(this).attr('class', 'btn btn-danger');
             status =  'offline';
+            document.getElementById('connectBtn').innerHTML = '🚀 Connect'
         }
 
         var data = {
@@ -79,6 +84,10 @@
         socket.send(JSON.stringify(data));
 
     });
+
+    function redirectToPage(url) {
+        window.location.href = url;
+    }
 
     function connectUsers() {
         var status = {
@@ -94,10 +103,19 @@
         socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             console.log('Received data:', data);
+            var user2 = data[0]
+            window.location.href = 'http://' + window.location.host + '/chat/'+user2+'/';
+            
+        };
+
+        socket.onclose = function(event) {
+            console.log('Connection closed');
+            document.getElementById('connectBtn').innerHTML = '🚀 Connect'
         };
     }
 
     $("#connectBtn").click(function() {
+        document.getElementById('connectBtn').innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"><span class="visually-hidden">Loading...</span></div> Loading...'
         connectUsers();
     });
 

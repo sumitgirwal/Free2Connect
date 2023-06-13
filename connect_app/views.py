@@ -14,5 +14,19 @@ def index(request):
     }
     return render(request, template_name, context)
 
-def chat_room(request, room_name):
-    return render(request, "chat.html", {"room_name": room_name})
+@login_required 
+def chat_room(request, user1):
+    user1 = CustomUser.objects.get(id=user1)
+    user2 = CustomUser.objects.get(id=request.user.id)
+
+    user1Interests =  user1.interests.all()
+    user2Interests =  user2.interests.all()
+    
+    context = {
+        'user1': user1,
+        'user2': user2,
+        'user1Interests': user1Interests,
+        'user2Interests': user2Interests
+    }
+
+    return render(request, "chat.html", context)

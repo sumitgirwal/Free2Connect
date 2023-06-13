@@ -20,7 +20,6 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave the room group
         print("Disconnecting.....")
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -38,7 +37,7 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                 }
             )
     
-    print("Receive.....")
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         print(data)
@@ -54,35 +53,24 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                     }
                 )
         elif data['status'] == 'connect':
-            # current user
             user = await self.get_user()
             if user is not None:
                 connected_user_id = data['user_id']
-                # Check if the connected user is online
                 connected_user = await self.get_user_by_id(connected_user_id)
                 if connected_user is not None and connected_user.is_online:
-                    # Fetch connected users with the same interest
-                    connected_users = await self.get_connected_users_with_same_interest(connected_user)
-                    if connected_users:
-                        # Send the connected users data to the WebSocket
-                        await self.send(text_data=json.dumps(connected_users))
+                    random_user = await self.get_connected_users_with_same_interest(connected_user)
+                    if random_user:
+                        await self.send(text_data=json.dumps(random_user))
+                        # return redirect('chat_room', user1=connected_user.id, user2=random_user[0])
 
 
     @database_sync_to_async      
-    def get_connected_users_with_same_interest(self, user):
-        current_user_interests = user.interests.all()
-        # connected_users = CustomUser.objects.filter(is_online=True, interests__in=current_user_interests).exclude(id=user.id)
-        connected_users = CustomUser.objects.all().exclude(id=user.id)
-        print(connected_users)
-        return list(connected_users.values('id', 'username'))
+    def get_connected_users_with_same_interest(self, current_user ):
+        current_user_interests = current_user.interests.all() 
+        random_user = CustomUser.objects.exclude(id=current_user.id).filter(is_online=True, interests__in=current_user_interests).order_by('?').first() 
+        return [random_user.id, random_user.username]
     
-            # if user is not None:
-            #     connected_user_id = data['user_id']
-            #     connected_user = await self.get_user_by_id(connected_user_id)
-            #     if connected_user is not None and connected_user.is_online:
-            #         # Redirect both users to the connected_users page
-            #         await self.redirect_to_connected_users(user.id, connected_user_id)
-            
+                     
 
 
     async def user_online(self, event):
@@ -121,7 +109,4 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         user.is_online = False
         user.save()
 
-    @database_sync_to_async
-    def redirect_to_connected_users(self, user_id, connected_user_id):
-        url = f'/connected_users/?user1={user_id}&user2={connected_user_id}'
-        return redirect(url)
+        
