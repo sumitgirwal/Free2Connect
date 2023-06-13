@@ -2,13 +2,19 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
 from django.db import models
-from .models import CustomUser
+from .models import CustomUser, Interest
 
 # Custom user creation form
 class CustomUserCreationForm(UserCreationForm):
+    interests = forms.ModelMultipleChoiceField(
+        queryset=Interest.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['full_name', 'email', 'phone', 'gender', 'country', 'username', 'password1', 'password2']
+        fields = ['full_name', 'email', 'phone', 'gender', 'country', 'username', 'password1', 'password2', 'interests']
     
 # Custom user login form
 class CustomLoginForm(forms.Form):

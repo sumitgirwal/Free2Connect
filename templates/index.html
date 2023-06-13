@@ -4,15 +4,76 @@
 {% block content %}
 
 <div class="container my-5">
-    <h1 class="text-black text-center">Feel Free to Connect 👋🏼</h1>
+    <h3 class="text-black text-center m-5">Feel Free to Connect 👋🏼</h3>
+    <div class="row mt-3">
+        <div class="col-4">
+            <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
+            <a class="btn btn-outline-dark mx-2 rounded-1">🚀 Connect</a>
+            <div class="mt-5">
+                {% if interests %}
+                <h5 class="text-black-100">Selected Interest's: ✨</h5>
+                {% for interest in interests %}
+                <button class="btn btn-sm btn-warning m-2"><i class="fas fa-check"></i>
+                    {{interest.name|title}}</a></button>
+                {% endfor %}
 
-
-    <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
-    <a class="btn btn-outline-dark mx-2">
-        <i class="fas fa-plus"></i> &nbsp;Connect</a>
+                {% else %}
+                <div class="row">
+                    <h5>No interest selected! </h5>
+                    <p class="text-black-50">Don't worry, we will connect you with someone randomly based on any
+                        interest.
+                        👍</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="row border border-1 p-5">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis commodi iste sit quia veniam voluptas
+                iusto itaque. Deleniti consectetur suscipit sit nobis tempore aliquid officia earum! Culpa sapiente
+                laborum velit!
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}
 {% block jsscript %}
-<script src="{% static 'js/index.js' %}"></script>
+<script>
+
+    var socket = new WebSocket('ws://' + window.location.host + '/ws/online_status/');
+
+    socket.onopen = function(event) {
+        console.log('WebSocket connection established.');
+    };
+
+    socket.onmessage = function(event) {
+        console.log('Message received:', event.data);
+    };
+
+    $('#online-toggle').click(function() {
+        var currentState = $(this).attr('data-state');
+        var status =  'offine';
+        console.log(currentState)
+        if (currentState === 'offline') {
+            $(this).text('Online');
+            $(this).attr('data-state', 'online');
+            $(this).attr('class', 'btn btn-outline-success');
+            status =  'online';
+        } else {
+            $(this).text('Offline');
+            $(this).attr('data-state', 'offline');
+            $(this).attr('class', 'btn btn-danger');
+            status =  'offline';
+        }
+
+        var data = {
+            'status': status
+        };
+        socket.send(JSON.stringify(data));
+
+    });
+
+    
+</script>
 {% endblock %}

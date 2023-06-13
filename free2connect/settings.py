@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,10 +45,7 @@ INSTALLED_APPS = [
     'accounts',
 
     # installed app
-    'channels',
-     "bootstrap5",
-    # "crispy_forms",
-    # "crispy_bootstrap5",
+    "bootstrap5",
 
 ]
 
@@ -65,6 +63,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# asgi config
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+# WSGI_APPLICATION = 'free2connect.wsgi.application'
+ASGI_APPLICATION = 'free2connect.asgi.application'
+ 
+
+
 
 ROOT_URLCONF = 'free2connect.urls'
 

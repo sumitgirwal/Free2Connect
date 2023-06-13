@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      
+    <title>Chat Room</title>
+    <!-- Include CSS and JavaScript files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // WebSocket connection
+            var socket = new WebSocket('ws://localhost:8000/ws/connections/');
+
+            socket.onopen = function () {
+                console.log('WebSocket connection established');
+            };
+
+            socket.onmessage = function (event) {
+                // Handle received messages
+                var message = JSON.parse(event.data);
+                console.log('Received message:', message);
+                // Add your logic to handle the received message
+            };
+
+            socket.onclose = function () {
+                console.log('WebSocket connection closed');
+            };
+
+            // Function to send a message to the server
+            function sendMessage(message) {
+                socket.send(JSON.stringify({
+                    'message': message
+                }));
+            }
+
+            // Function to connect to another user
+            function connectToUser() {
+                sendMessage('connect');
+            }
+
+            // Event listener for the "Connect" button
+            $('#connect-button').click(function () {
+                connectToUser();
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <button id="connect-button">Connect</button>
+</body>
+</html>
