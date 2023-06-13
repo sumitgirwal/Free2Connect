@@ -1,18 +1,3 @@
-# from channels.generic.websocket import WebsocketConsumer
-# import json
-
-# class OnlineStatusConsumer(WebsocketConsumer):
-#     def connect(self):
-#         self.accept()
-
-#     def disconnect(self, close_code):
-#         pass
-
-#     def receive(self, text_data):
-#         data = json.loads(text_data)
-#         if data['status'] == 'online':
-#             # Code to handle user being online
-#             print(data)
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 import json
 from channels.db import database_sync_to_async
@@ -38,6 +23,17 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        user = await self.get_user()
+        if user is not None:
+            await self.set_user_offline(user)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'user_offline',
+                    'user_id': user.id
+                }
+            )
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         if data['status'] == 'online':
@@ -51,10 +47,18 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                         'user_id': user.id
                     }
                 )
-        else:
-            # complete the offline 
-            pass 
-        
+        elif data['status'] == 'offline':
+            user = await self.get_user()
+            if user is not None:
+                await self.set_user_offline(user)
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'user_offline',
+                        'user_id': user.id
+                    }
+                )
+
     async def user_online(self, event):
         user_id = event['user_id']
 
@@ -64,6 +68,15 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
             'status': 'online'
         }))
 
+    async def user_offline(self, event):
+        user_id = event['user_id']
+
+        # Send a message to the WebSocket
+        await self.send(text_data=json.dumps({
+            'user_id': user_id,
+            'status': 'offline'
+        }))
+
     @database_sync_to_async
     def get_user(self):
         return self.scope['user']
@@ -71,4 +84,9 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def set_user_online(self, user):
         user.is_online = True
+        user.save()
+
+    @database_sync_to_async
+    def set_user_offline(self, user):
+        user.is_online = False
         user.save()
