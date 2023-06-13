@@ -2,6 +2,8 @@ from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 import json
 from channels.db import database_sync_to_async
 from asgiref.sync import async_to_sync
+from django.shortcuts import redirect
+from accounts.models import CustomUser
 
 class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -14,10 +16,12 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        print("Connecting.....")
         await self.accept()
 
     async def disconnect(self, close_code):
         # Leave the room group
+        print("Disconnecting.....")
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -33,9 +37,11 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                     'user_id': user.id
                 }
             )
-
+    
+    print("Receive.....")
     async def receive(self, text_data):
         data = json.loads(text_data)
+        print(data)
         if data['status'] == 'online':
             user = await self.get_user()
             if user is not None:
@@ -47,17 +53,37 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                         'user_id': user.id
                     }
                 )
-        elif data['status'] == 'offline':
+        elif data['status'] == 'connect':
+            # current user
             user = await self.get_user()
             if user is not None:
-                await self.set_user_offline(user)
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'user_offline',
-                        'user_id': user.id
-                    }
-                )
+                connected_user_id = data['user_id']
+                # Check if the connected user is online
+                connected_user = await self.get_user_by_id(connected_user_id)
+                if connected_user is not None and connected_user.is_online:
+                    # Fetch connected users with the same interest
+                    connected_users = await self.get_connected_users_with_same_interest(connected_user)
+                    if connected_users:
+                        # Send the connected users data to the WebSocket
+                        await self.send(text_data=json.dumps(connected_users))
+
+
+    @database_sync_to_async      
+    def get_connected_users_with_same_interest(self, user):
+        current_user_interests = user.interests.all()
+        # connected_users = CustomUser.objects.filter(is_online=True, interests__in=current_user_interests).exclude(id=user.id)
+        connected_users = CustomUser.objects.all().exclude(id=user.id)
+        print(connected_users)
+        return list(connected_users.values('id', 'username'))
+    
+            # if user is not None:
+            #     connected_user_id = data['user_id']
+            #     connected_user = await self.get_user_by_id(connected_user_id)
+            #     if connected_user is not None and connected_user.is_online:
+            #         # Redirect both users to the connected_users page
+            #         await self.redirect_to_connected_users(user.id, connected_user_id)
+            
+
 
     async def user_online(self, event):
         user_id = event['user_id']
@@ -82,6 +108,10 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         return self.scope['user']
 
     @database_sync_to_async
+    def get_user_by_id(self, user_id):
+        return CustomUser.objects.filter(id=user_id).first()
+
+    @database_sync_to_async
     def set_user_online(self, user):
         user.is_online = True
         user.save()
@@ -90,3 +120,8 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     def set_user_offline(self, user):
         user.is_online = False
         user.save()
+
+    @database_sync_to_async
+    def redirect_to_connected_users(self, user_id, connected_user_id):
+        url = f'/connected_users/?user1={user_id}&user2={connected_user_id}'
+        return redirect(url)

@@ -8,7 +8,7 @@
     <div class="row mt-3">
         <div class="col-4">
             <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
-            <a class="btn btn-outline-dark mx-2 rounded-1">🚀 Connect</a>
+            <a class="btn btn-outline-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
             <div class="mt-5">
                 {% if interests %}
                 <h5 class="text-black-100">Selected Interest's: ✨</h5>
@@ -40,7 +40,7 @@
 {% endblock %}
 {% block jsscript %}
 <script>
-
+ $(document).ready(function() {
     var socket = new WebSocket('ws://' + window.location.host + '/ws/online_status/');
 
     socket.onopen = function(event) {
@@ -51,6 +51,12 @@
         console.log('Message received:', event.data);
     };
 
+
+    // WebSocket connection closed
+    socket.onclose = function(event) {
+        console.log('Connection closed');
+    };
+        
     $('#online-toggle').click(function() {
         var currentState = $(this).attr('data-state');
         var status =  'offine';
@@ -74,6 +80,27 @@
 
     });
 
-    
+    function connectUsers() {
+        var status = {
+            'status': 'connect',
+            'user_id': '{{ request.user.id }}' 
+        };
+
+        console.log(status)
+        
+        socket.send(JSON.stringify(status));
+         
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            console.log('Received data:', data);
+        };
+    }
+
+    $("#connectBtn").click(function() {
+        connectUsers();
+    });
+
+    });
 </script>
 {% endblock %}
