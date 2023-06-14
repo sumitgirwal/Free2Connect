@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from asgiref.sync import async_to_sync
 from django.shortcuts import redirect
 from accounts.models import CustomUser
+from django.db.models import Q
 
 class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -19,6 +20,15 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         print("Connecting.....")
         await self.accept()
 
+
+    async def notify_connected(self, userId):
+        notification = {
+            'type': 'connected',
+            'user_id': userId,
+            'message': 'You are now connected in the chat room.'
+        }
+        await self.send(text_data=json.dumps(notification))
+    
     async def disconnect(self, close_code):
         print("Disconnecting.....")
         await self.channel_layer.group_discard(
@@ -60,14 +70,39 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                 if connected_user is not None and connected_user.is_online:
                     random_user = await self.get_connected_users_with_same_interest(connected_user)
                     if random_user:
-                        await self.send(text_data=json.dumps(random_user))
-                        # return redirect('chat_room', user1=connected_user.id, user2=random_user[0])
+                      
+                        # Send the message to the room group
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'chat_message',
+                                'message': "Working received the chat invite"
+                            }
+                        )
 
+                        await self.send(text_data=json.dumps(random_user))
+
+    async def chat_message(self, event):
+        message = event['message']
+        typeM = event['type']
+
+        # Send the message to the WebSocket
+        await self.send(text_data=json.dumps({
+            'type': typeM,
+            'message': message
+        }))
 
     @database_sync_to_async      
     def get_connected_users_with_same_interest(self, current_user ):
         current_user_interests = current_user.interests.all() 
-        random_user = CustomUser.objects.exclude(id=current_user.id).filter(is_online=True, interests__in=current_user_interests).order_by('?').first() 
+        random_user = CustomUser.objects.exclude(
+            Q(id=current_user.id) & Q(is_connected=True)
+        ).filter(
+            is_online=True,
+            interests__in=current_user_interests
+        ).order_by('?').first() 
+        random_user.is_connected = True
+        random_user.save()
         return [random_user.id, random_user.username]
     
                      
