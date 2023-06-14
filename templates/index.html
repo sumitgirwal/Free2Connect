@@ -2,16 +2,23 @@
 {% load static %}
 {% block title %} Home | Free 2 Connect {% endblock %}
 {% block content %}
- 
+
 <div class="container my-5">
     <h3 class="text-black text-center m-5">Feel Free to Connect 👋🏼</h3>
     <div class="row mt-3">
         <div class="col-6">
-            <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
+            <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button"
+              data-state="offline">Offline</button>
             <a class="btn btn-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
-            <div class="text-black-50 m-2">
+            <span class="text-black-50 m-2">
                 <i class="fas fa-users"></i> {{ usercount }} Users are Online
-            </div>
+            </span>
+            <p id="messageText" class="text-success"></p>
+            <p id="showInvite" class="text-success"></p>
+
+            <h1>Notification Example</h1>
+            <ul id="notification-list"></ul>
+
             <div class="mt-5">
                 {% if interests %}
                 <h5 class="text-black-100">Selected Interest's: ✨</h5>
@@ -35,9 +42,9 @@
                 <h3 class="text-black-100">Name : {{ request.user.full_name|title }}</h3>
                 <p class="text-black-50">Username : {{ request.user.username }}</p>
                 <p class="text-black-50">Email : {{ request.user.email }}</p>
-                <p class="text-black-50">Gender : {{ request.user.gender }}</p>
+                <p class="text-black-50">Gender : {{ request.user.gender|title }}</p>
                 <p class="text-black-50">Phone : {{ request.user.phone }}</p>
-                <p class="text-black-50">Country : {{ request.user.country }}</p>
+                <p class="text-black-50">Country : {{ request.user.country|title }}</p>
             </div>
         </div>
     </div>
@@ -48,92 +55,125 @@
 {% endblock %}
 {% block jsscript %}
 <script>
- $(document).ready(function() {
-    var socket = new WebSocket('ws://' + window.location.host + '/ws/online_status/');
+    $(document).ready(function () {
 
-    socket.onopen = function(event) {
-        console.log('WebSocket connection established.');
-    };
+        var userId = '{{ request.user.id }}';
 
-    socket.onmessage = function(event) {
-        console.log('Message received:', event.data);
-    };
+        var socket = new WebSocket('ws://' + window.location.host + '/ws/online_status/');
+        socket.onopen = function (event) {
+            console.log('WebSocket connection established.');
+        };
+
+        socket.onmessage = function (event) {
+            console.log('Message received:', event.data);
+            console.log("userid: ", userId)
+            console.log(event.data['senderID'], event.data['receiverID'])
+            console.log(event.data['random_user'])
+        };
 
 
-    // WebSocket connection closed
-    socket.onclose = function(event) {
-        console.log('Connection closed');
-        document.getElementById('connectBtn').innerHTML = '🚀 Connect'
-    };
-        
-    $('#online-toggle').click(function() {
-        var currentState = $(this).attr('data-state');
-        var status =  'offine';
-        console.log(currentState)
-        if (currentState === 'offline') {
-            $(this).text('Online');
-            $(this).attr('data-state', 'online');
-            $(this).attr('class', 'btn btn-outline-success');
-            status =  'online';
-            document.getElementById("connectBtn").classList.remove('disabled');
-        } else {
-            $(this).text('Offline');
-            $(this).attr('data-state', 'offline');
-            $(this).attr('class', 'btn btn-danger');
-            status =  'offline';
-            document.getElementById('connectBtn').innerHTML = '🚀 Connect'
-            document.getElementById("connectBtn").classList.add('disabled');
-            
+        // WebSocket connection closed
+        socket.onclose = function (event) {
+            console.log('Connection closed');
+            document.getElementById('connectBtn').innerHTML = '🚀 Connect';
+        };
+
+        $('#online-toggle').click(function () {
+            var currentState = $(this).attr('data-state');
+            var status = 'offine';
+            console.log(currentState)
+            if (currentState === 'offline') {
+                $(this).text('Online');
+                $(this).attr('data-state', 'online');
+                $(this).attr('class', 'btn btn-outline-success');
+                status = 'online';
+                document.getElementById("connectBtn").classList.remove('disabled');
+            } else {
+                $(this).text('Offline');
+                $(this).attr('data-state', 'offline');
+                $(this).attr('class', 'btn btn-danger');
+                status = 'offline';
+                document.getElementById('connectBtn').innerHTML = '🚀 Connect'
+                document.getElementById("connectBtn").classList.add('disabled');
+
+            }
+
+            var data = {
+                'status': status
+            };
+            socket.send(JSON.stringify(data));
+
+        });
+
+        function redirectToPage(url) {
+            window.location.href = url;
         }
 
-        var data = {
-            'status': status
-        };
-        socket.send(JSON.stringify(data));
+        function connectUsers() {
+            var status = {
+                'status': 'connect',
+                'user_id': '{{ request.user.id }}'
+            };
+
+            console.log(status)
+            socket.send(JSON.stringify(status));
+            socket.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                console.log('Received data:', data);
+                if (data['type'] === 'chat_message') {
+                    url = data['url']
+                    console.log(userId)
+                    console.log(data['senderID'])
+                    console.log(data['receiverID'])
+
+                    document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" >Send Connection Request</a>';
+
+                }
+
+            };
+
+            socket.onclose = function (event) {
+                console.log('Connection closed');
+                document.getElementById('connectBtn').innerHTML = '🚀 Connect'
+            };
+        }
+
+        $("#connectBtn").click(function () {
+            document.getElementById('connectBtn').innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"><span class="visually-hidden">Loading...</span></div> Loading...'
+            connectUsers();
+        });
+
+
+        document.getElementById("connectBtn").classList.add('disabled');
 
     });
 
-    function redirectToPage(url) {
-        window.location.href = url;
+
+    // NotificationConsumer for handling notifications
+    const notificationSocket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+
+    // open connection
+    notificationSocket.onopen = () => {
+        console.log('Notification WebSocket connection established.');
+    };
+
+    // close connection
+    notificationSocket.onclose = () => {
+        console.log('Notification WebSocket connection closed.');
+    };
+
+    // on message receive
+    notificationSocket.onmessage = (event) => {
+        // Handle received notifications
+        const notification = JSON.parse(event.data);
+        displayNotification(notification);
+    };
+
+    // helper function for displaying notifications
+    function displayNotification(notification) {
+        url = notification;
+        document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" >Send Connection Request</a>';
     }
 
-    function connectUsers() {
-        var status = {
-            'status': 'connect',
-            'user_id': '{{ request.user.id }}' 
-        };
-
-        console.log(status)
-        
-        socket.send(JSON.stringify(status));
-         
-
-        socket.onmessage = function(event) {
-            var data = JSON.parse(event.data);
-            console.log('Received data:', data);
-            if (!data['type']){
-                var user2 = data[0]
-                window.location.href = 'http://' + window.location.host + '/chat/'+user2+'/';
-            }else{
-                print(chat_message['type'])
-            }
-            
-        };
-
-        socket.onclose = function(event) {
-            console.log('Connection closed');
-            document.getElementById('connectBtn').innerHTML = '🚀 Connect'
-        };
-    }
-
-    $("#connectBtn").click(function() {
-        document.getElementById('connectBtn').innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"><span class="visually-hidden">Loading...</span></div> Loading...'
-        connectUsers();
-    });
-
-
-    document.getElementById("connectBtn").classList.add('disabled');
-
-    });
 </script>
 {% endblock %}
