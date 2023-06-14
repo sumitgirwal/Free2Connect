@@ -9,6 +9,9 @@
         <div class="col-6">
             <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
             <a class="btn btn-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
+            <div class="text-black-50 m-2">
+                <i class="fas fa-users"></i> {{ usercount }} Users are Online
+            </div>
             <div class="mt-5">
                 {% if interests %}
                 <h5 class="text-black-100">Selected Interest's: ✨</h5>
@@ -38,6 +41,8 @@
             </div>
         </div>
     </div>
+
+
 </div>
 
 {% endblock %}
@@ -70,12 +75,15 @@
             $(this).attr('data-state', 'online');
             $(this).attr('class', 'btn btn-outline-success');
             status =  'online';
+            document.getElementById("connectBtn").classList.remove('disabled');
         } else {
             $(this).text('Offline');
             $(this).attr('data-state', 'offline');
             $(this).attr('class', 'btn btn-danger');
             status =  'offline';
             document.getElementById('connectBtn').innerHTML = '🚀 Connect'
+            document.getElementById("connectBtn").classList.add('disabled');
+            
         }
 
         var data = {
@@ -103,8 +111,12 @@
         socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             console.log('Received data:', data);
-            var user2 = data[0]
-            window.location.href = 'http://' + window.location.host + '/chat/'+user2+'/';
+            if (!data['type']){
+                var user2 = data[0]
+                window.location.href = 'http://' + window.location.host + '/chat/'+user2+'/';
+            }else{
+                print(chat_message['type'])
+            }
             
         };
 
@@ -118,6 +130,9 @@
         document.getElementById('connectBtn').innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"><span class="visually-hidden">Loading...</span></div> Loading...'
         connectUsers();
     });
+
+
+    document.getElementById("connectBtn").classList.add('disabled');
 
     });
 </script>

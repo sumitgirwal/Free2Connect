@@ -9,8 +9,10 @@ def index(request):
     template_name = 'index.html'
     cu = CustomUser.objects.get(username=request.user.username)    
     interests = cu.interests.all()
+    userCount = CustomUser.objects.all().exclude(id=cu.id)
     context = {
-        'interests': interests
+        'interests': interests,
+        'usercount': len(userCount)
     }
     return render(request, template_name, context)
 
@@ -30,3 +32,7 @@ def chat_room(request, user1):
     }
 
     return render(request, "chat.html", context)
+
+def temp(request):
+    template_name = 'temp.html'
+    return render(request, template_name)
