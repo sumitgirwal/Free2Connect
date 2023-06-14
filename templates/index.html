@@ -6,11 +6,8 @@
 <div class="container my-5">
     <h3 class="text-black text-center m-5">Feel Free to Connect 👋🏼</h3>
     <div class="row mt-3">
-        <div class="col-4">
-            
-            
+        <div class="col-6">
             <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button" data-state="offline">Offline</button>
-
             <a class="btn btn-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
             <div class="mt-5">
                 {% if interests %}
@@ -30,11 +27,14 @@
                 {% endif %}
             </div>
         </div>
-        <div class="col-8">
-            <div class="row border border-1 p-5">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis commodi iste sit quia veniam voluptas
-                iusto itaque. Deleniti consectetur suscipit sit nobis tempore aliquid officia earum! Culpa sapiente
-                laborum velit!
+        <div class="col-6">
+            <div class="row border border-1 px-3 py-3">
+                <h3 class="text-black-100">Name : {{ request.user.full_name|title }}</h3>
+                <p class="text-black-50">Username : {{ request.user.username }}</p>
+                <p class="text-black-50">Email : {{ request.user.email }}</p>
+                <p class="text-black-50">Gender : {{ request.user.gender }}</p>
+                <p class="text-black-50">Phone : {{ request.user.phone }}</p>
+                <p class="text-black-50">Country : {{ request.user.country }}</p>
             </div>
         </div>
     </div>
