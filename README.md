@@ -42,7 +42,7 @@ pip install -r requirements.txt
 
 - Goto project folder
 ```bash
-cd codebelog
+cd Free2Connect
 ```
 
 - Database migrations
