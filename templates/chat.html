@@ -3,10 +3,10 @@
 {% block title %} ChatRoom | Free 2 Connect {% endblock %}
 {% block content %}
 <style>
-    .message-sender {
-        text-align: end;
+    .message {
+        display: block;
     }
-
+    
     .message-receiver {
         text-align: start;
     }
@@ -51,27 +51,10 @@
                 <div class="card-body">
 
 
-                    <div id="chat-messages" class="mb-3">
-                        <div class="message">
-                            <div class="message-text">
-                                <p class="mb-0">Hello!</p>
-                            </div>
-                            <div class="message-meta">
-                                <small class="text-muted">User A</small>
-                            </div>
-                        </div>
-                        <div class="message message-sender">
-                            <div class="message-text">
-                                <p class="mb-0">Hi there!</p>
-                            </div>
-                            <div class="message-meta">
-                                <small class="text-muted">User B</small>
-                            </div>
-                        </div>
-                        <!-- Add more messages here -->
+                    <div id="chat-messages" class="mb-3 g-2 p-5" style="height: 400px; overflow: scroll;">
                     </div>
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Type your message...">
+                        <input type="text" class="form-control" id="message-input" placeholder="Type your message...">
                         <button class="btn btn-primary" id="send-button">Send</button>
                     </div>
                 </div>
@@ -87,6 +70,8 @@
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
+        const userId = '{{ request.user.id }}';
+        const userName = '{{ request.user.full_name|title }}';
 
         var roomName = window.location.pathname.split('/');
         roomName = roomName[2]; 
@@ -104,24 +89,58 @@
 
         // on message
         socket.onmessage = function(event) {
-            const message = event.data;
-            displayMessage(message);
+            const data = event.data;
+            console.log(data)
+            displayMessage(data);
         };
 
         // Send button click event listener
         sendButton.addEventListener('click', function() {
             const message = messageInput.value;
             if (message !== '') {
-                socket.send(message);
+                var data = {
+                    'user_id': userId,
+                    'message': message
+                };
+                socket.send(JSON.stringify(data));
                 messageInput.value = '';
             }
         });
 
         // Display a new message in the chat UI
-        function displayMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            chatMessages.appendChild(messageElement);
+        function displayMessage(data) {
+            data = JSON.parse(data)
+            user_id = data["user_id"];
+            message = data["message"];
+                 
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message');
+            messageContainer.classList.add('my-4');
+
+            if(userId == user_id){
+                messageContainer.classList.add('message-sender');
+            }
+            const messageText = document.createElement('div');
+            messageText.classList.add('message-text');
+            
+            const paragraph = document.createElement('p');
+            paragraph.classList.add('mb-0');
+            paragraph.textContent = message;
+            messageText.appendChild(paragraph);
+            
+            const messageMeta = document.createElement('div');
+            messageMeta.classList.add('message-meta');
+            
+            const small = document.createElement('small');
+            small.classList.add('text-muted');
+            small.textContent =  userName;
+            messageMeta.appendChild(small);
+            messageContainer.appendChild(messageText);
+            messageContainer.appendChild(messageMeta);
+            
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.appendChild(messageContainer);
+        
         }
 
 
