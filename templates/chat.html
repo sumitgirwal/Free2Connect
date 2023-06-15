@@ -7,8 +7,8 @@
         display: block;
     }
     
-    .message-receiver {
-        text-align: start;
+    .message-sender {
+        text-align: end !important;
     }
 </style>
 <div class="container my-5">
@@ -49,8 +49,6 @@
         <div class="col-8">
             <div class="card rounded-1">
                 <div class="card-body">
-
-
                     <div id="chat-messages" class="mb-3 g-2 p-5" style="height: 400px; overflow: scroll;">
                     </div>
                     <div class="input-group">
@@ -117,6 +115,7 @@
             messageContainer.classList.add('message');
             messageContainer.classList.add('my-4');
 
+            console.log(userId, user_id, userId==user_id)
             if(userId == user_id){
                 messageContainer.classList.add('message-sender');
             }
@@ -127,16 +126,14 @@
             paragraph.classList.add('mb-0');
             paragraph.textContent = message;
             messageText.appendChild(paragraph);
-            
-            const messageMeta = document.createElement('div');
-            messageMeta.classList.add('message-meta');
+
             
             const small = document.createElement('small');
             small.classList.add('text-muted');
             small.textContent =  userName;
-            messageMeta.appendChild(small);
+             
             messageContainer.appendChild(messageText);
-            messageContainer.appendChild(messageMeta);
+             
             
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.appendChild(messageContainer);

@@ -47,6 +47,9 @@ class OnlineConsumer(AsyncWebsocketConsumer):
                 connected_user = await self.get_user_by_id(connected_user_id)
                 if connected_user is not None and connected_user.is_online:
                     random_user = await self.get_connected_users_with_same_interest(connected_user)
+                    if random_user[0] == connected_user.id:
+                        random_user = await self.get_connected_users_with_same_interest(connected_user)
+                        
                     url = connected_user.username+'-'+random_user[1]
                     if random_user:
 

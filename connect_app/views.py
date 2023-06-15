@@ -12,7 +12,11 @@ def index(request):
     template_name = 'index.html'
     cu = CustomUser.objects.get(username=request.user.username)
     interests = cu.interests.all()
+    cu.is_connected = False
+    cu.is_online = False
+    cu.save()
     userCount = CustomUser.objects.all().exclude(id=cu.id)
+    
     context = {
         'interests': interests,
         'usercount': len(userCount)
@@ -26,13 +30,20 @@ def chat_room(request, chat_room):
     try:
         user1 = CustomUser.objects.get(username=chat_room[1])
         user2 = CustomUser.objects.get(username=chat_room[0])
-        messages.success(request, "Your are successfully connected to "+str(user1.full_name))
+        if request.user.id == user1.id:
+            first_user = user2 
+            second_user = user1 
+        else:
+            first_user = user1 
+            second_user = user2
+
+        messages.success(request, "Your are successfully connected to "+str(first_user.full_name))
     except CustomUser.DoesNotExist:
         messages.error(request, "Some thing went wrong! Refresh page and try later.")
         return redirect('index')
 
-    user1Interests = user1.interests.all()
-    user2Interests = user2.interests.all()
+    user1Interests = first_user.interests.all()
+    user2Interests = second_user.interests.all()
 
     channel_layer = get_channel_layer()
 
@@ -53,8 +64,8 @@ def chat_room(request, chat_room):
     
 
     context = {
-        'user1': user1,
-        'user2': user2,
+        'user1': first_user,
+        'user2': second_user,
         'user1Interests': user1Interests,
         'user2Interests': user2Interests
     }
