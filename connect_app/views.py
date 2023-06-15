@@ -4,6 +4,7 @@ from accounts.models import CustomUser, Interest
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.contrib import messages
 
 # Create your views here.
 @login_required
@@ -18,7 +19,6 @@ def index(request):
     }
     return render(request, template_name, context)
 
-
 @login_required
 def chat_room(request, chat_room):
     url = chat_room
@@ -26,7 +26,9 @@ def chat_room(request, chat_room):
     try:
         user1 = CustomUser.objects.get(username=chat_room[1])
         user2 = CustomUser.objects.get(username=chat_room[0])
+        messages.success(request, "Your are successfully connected to "+str(user1.full_name))
     except CustomUser.DoesNotExist:
+        messages.error(request, "Some thing went wrong! Refresh page and try later.")
         return redirect('index')
 
     user1Interests = user1.interests.all()
@@ -47,6 +49,8 @@ def chat_room(request, chat_room):
     
     user1.save()
     user2.save()
+
+    
 
     context = {
         'user1': user1,

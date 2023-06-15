@@ -85,12 +85,22 @@ class OnlineConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_connected_users_with_same_interest(self, current_user):
         current_user_interests = current_user.interests.all()
+        # trying to match the interest
         random_user = CustomUser.objects.exclude(
             Q(id=current_user.id) & Q(is_connected=True)
         ).filter(
             is_online=True,
             interests__in=current_user_interests
         ).order_by('?').first()
+
+        # if not matching to any interest
+        if random_user == None:
+            random_user = CustomUser.objects.exclude(
+                Q(id=current_user.id) & Q(is_connected=True)
+            ).filter(
+                is_online=True
+            ).order_by('?').first()
+            
         random_user.is_connected = True
         random_user.save()
         return [random_user.id, random_user.username]
