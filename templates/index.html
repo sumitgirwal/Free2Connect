@@ -13,11 +13,8 @@
             <span class="text-black-50 m-2">
                 <i class="fas fa-users"></i> {{ usercount }} Users are Online
             </span>
-            <p id="messageText" class="text-success"></p>
-            <p id="showInvite" class="text-success"></p>
 
-            <h1>Notification Example</h1>
-            <ul id="notification-list"></ul>
+            <p id="showInvite" class="text-success mt-3"></p>
 
             <div class="mt-5">
                 {% if interests %}
@@ -95,6 +92,7 @@
                 status = 'offline';
                 document.getElementById('connectBtn').innerHTML = '🚀 Connect'
                 document.getElementById("connectBtn").classList.add('disabled');
+                document.getElementById('showInvite').innerText = '';
 
             }
 
@@ -126,7 +124,7 @@
                     console.log(data['senderID'])
                     console.log(data['receiverID'])
 
-                    document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" >Send Connection Request</a>';
+                    document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" class="btn btn-success">Send Connection Request</a>';
 
                 }
 
@@ -172,7 +170,7 @@
     // helper function for displaying notifications
     function displayNotification(notification) {
         url = notification;
-        document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" >Send Connection Request</a>';
+        document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" class="btn btn-success">Accept Connection Request</a>';
     }
 
 </script>

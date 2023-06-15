@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from accounts.models import CustomUser, Interest
 from django.contrib.auth.decorators import login_required
@@ -23,11 +23,11 @@ def index(request):
 def chat_room(request, chat_room):
     url = chat_room
     chat_room = chat_room.split('-')
-    user1 = chat_room[0]
-    user2 = chat_room[1]
-
-    user1 = CustomUser.objects.get(username=user2)
-    user2 = CustomUser.objects.get(id=request.user.id)
+    try:
+        user1 = CustomUser.objects.get(username=chat_room[1])
+        user2 = CustomUser.objects.get(username=chat_room[0])
+    except CustomUser.DoesNotExist:
+        return redirect('index')
 
     user1Interests = user1.interests.all()
     user2Interests = user2.interests.all()
@@ -41,6 +41,12 @@ def chat_room(request, chat_room):
             "notification": url
         }
     )
+
+    user1.is_connected = True
+    user2.is_connected = True 
+    
+    user1.save()
+    user2.save()
 
     context = {
         'user1': user1,
