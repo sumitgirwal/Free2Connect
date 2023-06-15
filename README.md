@@ -9,13 +9,23 @@ Free2Connect sounds like a suitable project name for a platform that enables two
 
 Overall, "Free2Connect" conveys the concept of enabling individuals to connect freely based on shared interests. It suggests a user-friendly and inclusive platform where users can engage in conversations to find like-minded individuals.
 
+
+Live Demo : https://youtu.be/qe_RfWpZqPY
+
+
 ## Built with
+```bash
 Python
 Django
 Bootstrap 5
 Html
 CSS
 JS 
+```
+
+
+
+
 
 #### Quick Run
 ```bash
