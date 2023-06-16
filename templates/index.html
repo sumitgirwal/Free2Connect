@@ -10,7 +10,7 @@
             <button id="online-toggle" class="btn btn-danger" data-toggle="toggle-button"
               data-state="offline">Offline</button>
             <a class="btn btn-dark mx-2 rounded-1" id="connectBtn">🚀 Connect</a>
-            <span class="text-black-50 m-2">
+            <span class="text-black-50 m-2" id="setUserCount">
                 <i class="fas fa-users"></i> {{ usercount }} Users are Online
             </span>
 
@@ -171,6 +171,36 @@
     function displayNotification(notification) {
         url = notification;
         document.getElementById('showInvite').innerHTML = '<a href="' + 'http://' + window.location.host + '/chat/' + url + '/' + '" class="btn btn-success">Accept Connection Request</a>';
+    }
+
+
+
+    // Online for handling check online
+    const onlineSocket = new WebSocket('ws://' + window.location.host + '/ws/online/');
+
+    // open connection
+    onlineSocket.onopen = () => {
+        console.log('Online WebSocket connection established.');
+    };
+
+    // close connection
+    onlineSocket.onclose = () => {
+        console.log('Online WebSocket connection closed.');
+    };
+
+    // on message receive
+    onlineSocket.onmessage = (event) => {
+        // Handle received notifications
+        const online = JSON.parse(event.data);
+        displayOnline(online);
+    };
+
+    // helper function for displaying notifications
+    function displayOnline(userCount) {
+        
+        console.log("User Count : ", userCount);
+        document.getElementById('setUserCount').innerHTML = `<i class="fas fa-users"></i> ${userCount} Users are Online`;
+        
     }
 
 </script>

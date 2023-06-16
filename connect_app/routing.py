@@ -1,10 +1,11 @@
-from django.urls import re_path, path
+from django.urls import path
 from connect_app import consumers
 
 websocket_urlpatterns = [
 
-    re_path('ws/online_status/', consumers.OnlineConsumer.as_asgi()),
-    re_path('ws/notifications/', consumers.NotificationConsumer.as_asgi()),
-    path('ws/rooms/<room_name>/', consumers.ChatConsumer.as_asgi())
+    path('ws/online_status/', consumers.OnlineConnectConsumer.as_asgi()),
+    path('ws/notifications/', consumers.NotificationConsumer.as_asgi()),
+    path('ws/rooms/<room_name>/', consumers.ChatConsumer.as_asgi()),
+    path('ws/online/', consumers.OnlineConsumer.as_asgi())
     
 ]

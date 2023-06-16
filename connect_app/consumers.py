@@ -9,8 +9,8 @@ from accounts.models import CustomUser
 from connect_app.models import Room, Message
 
 
-# Online Consumer
-class OnlineConsumer(AsyncWebsocketConsumer):
+# Online Connect Consumer
+class OnlineConnectConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = "online_users"
         self.room_group_name = f"online_users_group"
@@ -33,6 +33,7 @@ class OnlineConsumer(AsyncWebsocketConsumer):
             user = await self.get_user()
             if user is not None:
                 await self.set_user_online(user)
+                
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -40,6 +41,17 @@ class OnlineConsumer(AsyncWebsocketConsumer):
                         'user_id': user.id
                     }
                 )
+
+                user_count = await self.count_user_online(user)
+                
+                await self.channel_layer.group_send(
+                    "online_group_test",
+                    {
+                        "type": "send_online",
+                        "user_count": user_count
+                    }
+                )
+                
         elif data['status'] == 'connect':
             user = await self.get_user()
             if user is not None:
@@ -139,6 +151,12 @@ class OnlineConsumer(AsyncWebsocketConsumer):
     def set_user_offline(self, user):
         user.is_online = False
         user.save()
+        
+    
+    @database_sync_to_async
+    def count_user_online(self, user):
+        userCount = len(CustomUser.objects.filter(is_online=True).exclude(id=user.id))
+        return userCount
 
 
 # Notification Consumer
@@ -214,4 +232,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': message
 
         }))
-        
+
+# Online Consumer
+class OnlineConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_group_name = f'online_group_test'
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self):
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+       pass
+
+    async def send_online(self, event):
+        user_count = event['user_count']
+        await self.send(text_data=json.dumps(user_count))

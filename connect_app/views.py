@@ -15,8 +15,7 @@ def index(request):
     cu.is_connected = False
     cu.is_online = False
     cu.save()
-    userCount = CustomUser.objects.all().exclude(id=cu.id)
-    
+    userCount = CustomUser.objects.filter(is_online=True).exclude(id=cu.id)
     context = {
         'interests': interests,
         'usercount': len(userCount)
@@ -60,8 +59,6 @@ def chat_room(request, chat_room):
     
     user1.save()
     user2.save()
-
-    
 
     context = {
         'user1': first_user,
